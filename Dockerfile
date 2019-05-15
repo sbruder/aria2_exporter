@@ -14,6 +14,8 @@ FROM scratch
 
 COPY --from=builder /go/src/github.com/sbruder/aria2_exporter/aria2_exporter /aria2_exporter
 
+USER 1000
+
 ENTRYPOINT ["/aria2_exporter"]
 
 EXPOSE 9578
