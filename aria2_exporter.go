@@ -67,7 +67,7 @@ type Exporter struct {
 func stringToFloat64(input string) (output float64) {
 	output, err := strconv.ParseFloat(input, 64)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 	}
 
 	return
@@ -85,12 +85,12 @@ func (e Exporter) Collect(ch chan<- prometheus.Metric) {
 	rpcClient := jsonrpc.NewClient(fmt.Sprintf("%s/jsonrpc", e.URL))
 	response, err := rpcClient.Call("aria2.tellActive")
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 	}
 	var downloads Downloads
 	err = response.GetObject(&downloads)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 	}
 
 	for _, download := range downloads {
