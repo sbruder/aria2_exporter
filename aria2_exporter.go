@@ -86,11 +86,13 @@ func (e Exporter) Collect(ch chan<- prometheus.Metric) {
 	response, err := rpcClient.Call("aria2.tellActive")
 	if err != nil {
 		log.Print(err)
+		return
 	}
 	var downloads Downloads
 	err = response.GetObject(&downloads)
 	if err != nil {
 		log.Print(err)
+		return
 	}
 
 	for _, download := range downloads {
