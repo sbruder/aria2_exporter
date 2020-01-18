@@ -96,6 +96,9 @@ func (e Exporter) Collect(ch chan<- prometheus.Metric) {
 	}
 
 	for _, download := range downloads {
+		if (download.Bittorrent.Info.Name == "") {
+			continue
+		}
 		name := download.Bittorrent.Info.Name
 		peers := stringToFloat64(download.Peers)
 		seeders := stringToFloat64(download.Seeders)
