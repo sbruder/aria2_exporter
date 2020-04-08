@@ -17,27 +17,27 @@ var (
 	aria2TorrentPeers = prometheus.NewDesc(
 		"aria2_torrent_peers",
 		"Number of peers",
-		[]string{"torrent"}, nil,
+		[]string{"hash", "torrent"}, nil,
 	)
 	aria2TorrentSeeders = prometheus.NewDesc(
 		"aria2_torrent_seeders",
 		"Number of seeders",
-		[]string{"torrent"}, nil,
+		[]string{"hash", "torrent"}, nil,
 	)
 	aria2TorrentSize = prometheus.NewDesc(
 		"aria2_torrent_size_bytes",
 		"Size of torrent data",
-		[]string{"torrent"}, nil,
+		[]string{"hash", "torrent"}, nil,
 	)
 	aria2TorrentDownloaded = prometheus.NewDesc(
 		"aria2_torrent_downloaded_bytes_total",
 		"Amount of data downloaded",
-		[]string{"torrent"}, nil,
+		[]string{"hash", "torrent"}, nil,
 	)
 	aria2TorrentUploaded = prometheus.NewDesc(
 		"aria2_torrent_uploaded_bytes_total",
 		"Amount of data uploaded",
-		[]string{"torrent"}, nil,
+		[]string{"hash", "torrent"}, nil,
 	)
 )
 
@@ -51,10 +51,11 @@ type Bittorrent struct {
 
 type Download struct {
 	Bittorrent Bittorrent `json:"bittorrent"`
+	Downloaded string     `json:"completedLength"`
+	InfoHash   string     `json:"infoHash"`
 	Peers      string     `json:"connections"`
 	Seeders    string     `json:"numSeeders"`
 	Size       string     `json:"totalLength"`
-	Downloaded string     `json:"completedLength"`
 	Uploaded   string     `json:"uploadLength"`
 }
 
@@ -96,9 +97,10 @@ func (e Exporter) Collect(ch chan<- prometheus.Metric) {
 	}
 
 	for _, download := range downloads {
-		if (download.Bittorrent.Info.Name == "") {
+		if download.Bittorrent.Info.Name == "" {
 			continue
 		}
+		hash := download.InfoHash
 		name := download.Bittorrent.Info.Name
 		peers := stringToFloat64(download.Peers)
 		seeders := stringToFloat64(download.Seeders)
@@ -106,11 +108,11 @@ func (e Exporter) Collect(ch chan<- prometheus.Metric) {
 		uploaded := stringToFloat64(download.Uploaded)
 		downloaded := stringToFloat64(download.Downloaded)
 
-		ch <- prometheus.MustNewConstMetric(aria2TorrentPeers, prometheus.GaugeValue, peers, name)
-		ch <- prometheus.MustNewConstMetric(aria2TorrentSeeders, prometheus.GaugeValue, seeders, name)
-		ch <- prometheus.MustNewConstMetric(aria2TorrentSize, prometheus.CounterValue, size, name)
-		ch <- prometheus.MustNewConstMetric(aria2TorrentUploaded, prometheus.CounterValue, uploaded, name)
-		ch <- prometheus.MustNewConstMetric(aria2TorrentDownloaded, prometheus.CounterValue, downloaded, name)
+		ch <- prometheus.MustNewConstMetric(aria2TorrentPeers, prometheus.GaugeValue, peers, hash, name)
+		ch <- prometheus.MustNewConstMetric(aria2TorrentSeeders, prometheus.GaugeValue, seeders, hash, name)
+		ch <- prometheus.MustNewConstMetric(aria2TorrentSize, prometheus.CounterValue, size, hash, name)
+		ch <- prometheus.MustNewConstMetric(aria2TorrentUploaded, prometheus.CounterValue, uploaded, hash, name)
+		ch <- prometheus.MustNewConstMetric(aria2TorrentDownloaded, prometheus.CounterValue, downloaded, hash, name)
 	}
 }
 
