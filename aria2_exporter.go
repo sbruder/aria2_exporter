@@ -62,7 +62,8 @@ type Download struct {
 type Downloads []Download
 
 type Exporter struct {
-	URL string
+	URL    string
+	Secret string
 }
 
 func stringToFloat64(input string) (output float64) {
@@ -84,11 +85,17 @@ func (e Exporter) Describe(ch chan<- *prometheus.Desc) {
 
 func (e Exporter) Collect(ch chan<- prometheus.Metric) {
 	rpcClient := jsonrpc.NewClient(fmt.Sprintf("%s/jsonrpc", e.URL))
-	response, err := rpcClient.Call("aria2.tellActive")
+	response, err := rpcClient.Call("aria2.tellActive", "token:"+e.Secret)
 	if err != nil {
 		log.Print(err)
 		return
 	}
+
+	if response.Error != nil {
+		log.Printf("JSON-RPC error has occurred: %s", response.Error)
+		return
+	}
+
 	var downloads Downloads
 	err = response.GetObject(&downloads)
 	if err != nil {
@@ -117,9 +124,12 @@ func (e Exporter) Collect(ch chan<- prometheus.Metric) {
 }
 
 func main() {
-	e := Exporter{URL: os.Getenv("ARIA2_URL")}
+	e := Exporter{URL: os.Getenv("ARIA2_URL"), Secret: os.Getenv("ARIA2_RPC_SECRET")}
 	if e.URL == "" {
 		log.Fatal("Please specify the environment variable ARIA2_URL")
+	}
+	if e.Secret == "" {
+		log.Print("Specify RPC secret token using the environment variable ARIA2_RPC_SECRET if needed")
 	}
 	prometheus.MustRegister(e)
 	http.Handle("/metrics", promhttp.Handler())
