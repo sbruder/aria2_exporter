@@ -20,4 +20,5 @@ Replace `aria2.example.com:6800` with the host and port of your aria2 instance.
 Replace `aria2-rpc-secret-token` with the RPC secret authorization token if aria2
 is configured to use it or leave it blank otherwise.
 
-Metrics are available on http://localhost:9578/metrics
+Metrics are available on http://localhost:9578/metrics or on the endpoint set
+in `ARIA2_EXPORTER_LISTEN_ADDRESS`.

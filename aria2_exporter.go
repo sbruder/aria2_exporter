@@ -133,5 +133,12 @@ func main() {
 	}
 	prometheus.MustRegister(e)
 	http.Handle("/metrics", promhttp.Handler())
-	log.Fatal(http.ListenAndServe(":9578", nil))
+
+	listenAddress := os.Getenv("ARIA2_EXPORTER_LISTEN_ADDRESS")
+	if listenAddress == "" {
+		listenAddress = ":9578"
+	}
+	log.Printf("Starting HTTP server at at %s", listenAddress)
+
+	log.Fatalf("Failed to start http server: %v", http.ListenAndServe(listenAddress, nil))
 }
