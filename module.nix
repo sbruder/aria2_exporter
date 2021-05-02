@@ -7,7 +7,7 @@ in
     enable = lib.mkEnableOption "the prometheus aria2 exporter";
     package = lib.mkOption {
       type = lib.types.package;
-      default = import ./default.nix { inherit pkgs; };
+      default = pkgs.aria2_exporter;
       example = "pkgs.aria2_exporter-fork";
       description = "The package to use for aria2_exporter";
     };
