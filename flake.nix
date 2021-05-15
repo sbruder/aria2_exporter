@@ -43,5 +43,12 @@
       };
 
       defaultPackage = packages.aria2_exporter;
+
+      checks = {
+        integration-test = import ./test.nix {
+          inherit nixpkgs system;
+          inherit (self) nixosModules;
+        };
+      };
     });
 }
