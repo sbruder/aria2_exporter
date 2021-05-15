@@ -50,5 +50,13 @@
           inherit (self) nixosModules;
         };
       };
+
+      # My hydra only has x86_64-linux builders
+      hydraJobs = if pkgs.lib.elem system [ "x86_64-linux" ]
+        then {
+          build = defaultPackage;
+          integration-test = checks.integration-test;
+        }
+        else { };
     });
 }
